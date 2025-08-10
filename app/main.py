@@ -39,7 +39,7 @@ class YouTubeFinderApp(ctk.CTk):
         for keyword in keywords:
             video_ids = self.api.search_videos(keyword)
             if not video_ids:
-                self._add_table_row(["No results", "-", "-", "-", "-", "-", "-", keyword], row=row)
+                self._add_table_row(["No results", "-", "-", "-", "-", "-", keyword], row=row, video_id=None)
                 row += 1
                 continue
             details = self.api.get_videos_details(video_ids[:1])  # Change to [:3] for top 3
@@ -53,11 +53,12 @@ class YouTubeFinderApp(ctk.CTk):
                 subs = self._format_number(subs_dict.get(item["snippet"]["channelId"], "0"))
                 duration = self._format_duration(item["contentDetails"]["duration"])
                 published = item["snippet"]["publishedAt"][:10]
-                self._add_table_row([title, channel, views, subs, duration, published, keyword, "Open"], row=row)
+                video_id = item["id"]  # Get the actual video ID
+                self._add_table_row([title, channel, views, subs, duration, published, keyword], row=row, video_id=video_id)
                 row += 1
                 found_any = True
         if not found_any:
-            self._add_table_row(["No results", "-", "-", "-", "-", "-", "-", "-"], row=0)
+            self._add_table_row(["No results", "-", "-", "-", "-", "-", "-"], row=0, video_id=None)
 
     def _format_number(self, num):
         if num == "0" or num == "-":
@@ -170,79 +171,94 @@ class YouTubeFinderApp(ctk.CTk):
         self.schedule_button.pack(pady=(0, 16))
 
     def _create_main_area(self):
-        # Status & progress
+        # ---------- STATUS BAR ----------
         status_frame = ctk.CTkFrame(self.main_area, fg_color="transparent")
         status_frame.pack(fill="x", pady=(10, 0), padx=10)
 
-        # Quota estimate
-        self.quota_label = ctk.CTkLabel(status_frame, text="Estimated quota: 0 / 0", font=ctk.CTkFont(size=14, weight="bold"))
+        self.quota_label = ctk.CTkLabel(
+            status_frame, text="Estimated quota: 0 / 0",
+            font=ctk.CTkFont(size=14, weight="bold"))
         self.quota_label.pack(side="left", padx=(0, 15))
 
-        # Counters
-        self.counters_label = ctk.CTkLabel(status_frame, text="Scanned: 0  |  Kept: 0  |  Skipped: 0", font=ctk.CTkFont(size=14))
+        self.counters_label = ctk.CTkLabel(
+            status_frame, text="Scanned: 0  |  Kept: 0  |  Skipped: 0",
+            font=ctk.CTkFont(size=14))
         self.counters_label.pack(side="left", padx=(0, 15))
 
-        # Progress Bar
         self.progress_var = ctk.DoubleVar()
-        self.progress_bar = ctk.CTkProgressBar(status_frame, variable=self.progress_var, width=250)
+        self.progress_bar = ctk.CTkProgressBar(
+            status_frame, variable=self.progress_var, width=250)
         self.progress_bar.pack(side="right", padx=(15, 0))
         self.progress_bar.set(0)
 
-        table_header = ctk.CTkFrame(self.main_area, fg_color="gray90")
-        table_header.pack(fill="x", pady=(14, 0), padx=10)
-        columns = ["Title", "Channel", "Views", "Subs", "Duration", "Published", "Keyword", "Open"]
-        self.table_header = ctk.CTkFrame(self.main_area, fg_color="gray90")
-        self.table_header.pack(fill="x", pady=(14, 0), padx=10)
-        for i, col in enumerate(columns):
-            ctk.CTkLabel(
-                self.table_header, text=col, font=ctk.CTkFont(size=13, weight="bold"),
-                padx=6, pady=10, anchor="s"
-            ).grid(row=0, column=i, padx=2, pady=6, sticky="nsew")
+        # ---------- TABLE WRAPPER ----------
+        # Outer frame hosts both scrollbars
+        wrapper = ctk.CTkFrame(self.main_area)
+        wrapper.pack(fill="both", expand=True, padx=10, pady=(10, 15))
 
-        # Table frame with horizontal scrollbar
-        self.table_container = ctk.CTkFrame(self.main_area, corner_radius=10, width=900)  # Increased width to fit more columns
-        self.table_container.pack(fill="both", expand=True, padx=10, pady=(0, 15))
+        # Canvas + Scrollbars
+        self.table_canvas = ctk.CTkCanvas(
+            wrapper, highlightthickness=0, bg="white")
+        h_scroll = ctk.CTkScrollbar(
+            wrapper, orientation="horizontal", command=self.table_canvas.xview)
+        v_scroll = ctk.CTkScrollbar(
+            wrapper, orientation="vertical", command=self.table_canvas.yview)
 
-        self.table_canvas = ctk.CTkCanvas(self.table_container, height=400)
-        self.table_frame = ctk.CTkFrame(self.table_canvas, height=400)  # Fixed height to match canvas
-        self.h_scrollbar = ctk.CTkScrollbar(self.table_container, orientation="horizontal", command=self.table_canvas.xview)
-        self.table_canvas.configure(xscrollcommand=self.h_scrollbar.set, yscrollcommand=None)  # Disable vertical scrolling
+        self.table_canvas.configure(
+            xscrollcommand=h_scroll.set, yscrollcommand=v_scroll.set)
 
         self.table_canvas.pack(side="top", fill="both", expand=True)
-        self.h_scrollbar.pack(side="bottom", fill="x")
-        self.table_canvas.create_window((0, 0), window=self.table_frame, anchor="nw")
+        h_scroll.pack(side="bottom", fill="x")
+        v_scroll.pack(side="right", fill="y")
 
-        # Configure column weights and minimum sizes based on content
-        self.table_frame.grid_columnconfigure(0, minsize=300)  # Title
-        self.table_frame.grid_columnconfigure(1, minsize=150)  # Channel
-        self.table_frame.grid_columnconfigure(2, minsize=80)   # Views
-        self.table_frame.grid_columnconfigure(3, minsize=80)   # Subs
-        self.table_frame.grid_columnconfigure(4, minsize=80)   # Duration
-        self.table_frame.grid_columnconfigure(5, minsize=100)  # Published
-        self.table_frame.grid_columnconfigure(6, minsize=100)  # Keyword
-        self.table_frame.grid_columnconfigure(7, minsize=60)   # Open
+        # Inner frame that will hold every row
+        self.table_frame = ctk.CTkFrame(self.table_canvas)
+        self.canvas_window = self.table_canvas.create_window(
+            (0, 0), window=self.table_frame, anchor="nw")
 
-        # Update scroll region when frame size changes
-        self.table_frame.bind("<Configure>", lambda e: self.table_canvas.configure(scrollregion=self.table_canvas.bbox("all")))
+        # Column widths
+        self.col_widths = [300, 150, 80, 80, 80, 100, 120, 60]
 
-    def _add_table_row(self, values, row=0):
-        for i, val in enumerate(values):
-            wraplength = 300 if i == 0 else 120
+        # ---- Header ----
+        bold = ctk.CTkFont(size=13, weight="bold")
+        for idx, text in enumerate(
+                ["Title", "Channel", "Views", "Subs",
+                 "Duration", "Published", "Keyword", "Open"]):
             ctk.CTkLabel(
-                self.table_frame, 
-                text=val, 
-                anchor="sw", 
-                padx=6, pady=6, 
-                width=wraplength, 
-                wraplength=wraplength,
-                font=ctk.CTkFont(size=13)
-            ).grid(row=row, column=i, padx=2, pady=4, sticky="sw")
-        # Last column: Open button
-        ctk.CTkButton(
-            self.table_frame, 
-            text="Open", 
-            width=60
-        ).grid(row=row, column=len(values)-1, padx=6, pady=4, sticky="se")
+                self.table_frame, text=text, font=bold,
+                anchor="w", padx=6, pady=8, width=self.col_widths[idx]
+            ).grid(row=0, column=idx, sticky="nsew")
+
+        # Auto-update scroll-region
+        self.table_frame.bind("<Configure>",
+                              lambda e: self.table_canvas.configure(
+                                  scrollregion=self.table_canvas.bbox("all")))
+
+    def _update_scrollregion(self, event=None):
+        """Update the scrollregion of the canvas to encompass the inner frame"""
+        self.table_canvas.update_idletasks()
+        self.table_canvas.configure(scrollregion=self.table_canvas.bbox("all"))
+
+    def _add_table_row(self, values, row=0, video_id=None):
+        normal = ctk.CTkFont(size=13)
+
+        for idx, val in enumerate(values):
+            wrap = 300 if idx == 0 else 120
+            ctk.CTkLabel(
+                self.table_frame, text=str(val), font=normal,
+                anchor="w", padx=6, pady=6,
+                wraplength=wrap, width=self.col_widths[idx]
+            ).grid(row=row + 1, column=idx, sticky="nsew")
+
+        if video_id:
+            ctk.CTkButton(
+                self.table_frame, text="Open", width=60, height=24,
+                command=lambda v=video_id: self._open_video(v)
+            ).grid(row=row + 1, column=len(values), padx=6, pady=4, sticky="e")
+
+    def _open_video(self, video_id):
+        import webbrowser
+        webbrowser.open(f"https://www.youtube.com/watch?v={video_id}")
 
 def main():
     app = YouTubeFinderApp()
