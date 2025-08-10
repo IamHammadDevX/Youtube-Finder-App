@@ -14,6 +14,13 @@ class YouTubeAPI:
         self.quota_cap = quota_cap
         self.quota_used = 0
 
+    def estimate_run_cost(self, keywords, pages_per_keyword=1):
+        """Estimate quota cost for a search operation"""
+        estimated_results = len(keywords) * pages_per_keyword * 10  # Assume ~10 results per page
+        search_cost = len(keywords) * pages_per_keyword * self.SEARCH_LIST_COST
+        details_cost = estimated_results * (self.VIDEOS_LIST_COST + self.CHANNELS_LIST_COST)
+        return search_cost + details_cost
+
     def can_afford(self, cost):
         return (self.quota_used + cost) <= self.quota_cap
 

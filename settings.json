@@ -1,0 +1,19 @@
+{
+  "api_cap": 9500,
+  "keywords": [
+    "Saiyara song",
+    "scary pumkin"
+  ],
+  "duration": "any",
+  "duration_min": null,
+  "duration_max": null,
+  "views_min": null,
+  "views_max": null,
+  "subs_min": null,
+  "subs_max": null,
+  "region": "",
+  "language": "",
+  "pages_per_keyword": 1,
+  "skip_hidden_subs": true,
+  "fresh_search": false
+}
