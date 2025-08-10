@@ -1,0 +1,264 @@
+# =======================================
+# Python
+# =======================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pyc
+*.so
+
+# Compiled C extensions
+*.c
+*.cpp
+*.o
+*.a
+*.dSYM/
+*.dylib
+
+# Cython
+cython_debug/
+
+# Environment
+.env
+.env.*
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+*.env
+
+# Poetry
+poetry.lock
+poetry.toml
+
+# Pipenv
+Pipfile.lock
+
+# Conda
+conda-meta/
+*.conda
+*.yml
+
+# PyInstaller
+*.spec
+*.manifest
+
+# Build
+build/
+dist/
+develop-eggs/
+downloads/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+*.whl
+
+# Coverage and testing
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+.testmondata
+
+# Static analysis
+.mypy_cache/
+.dmypy.json
+.dmypy.json
+.pyre/
+.pylint.d/
+bandit.yaml
+
+# Notebooks
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Logs
+*.log
+*.out
+*.err
+*.tmp
+*.bak
+
+# Lock / debug files
+*.lock
+*.pid
+
+# Profiling
+*.prof
+*.lprof
+*.pstats
+
+# SQLite and databases
+*.sqlite3
+*.sqlite
+*.db
+*.db-journal
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+*.csr
+*.pub
+
+# Secrets (recommended precaution)
+secrets.*
+secret.*
+config/secrets/
+credentials.*
+*.token
+*.secret
+*.keyring
+
+# Docker
+Dockerfile
+docker-compose.override.yml
+docker-compose.dev.yml
+.docker/
+*.env
+
+# VS Code
+.vscode/
+.history/
+.code-workspace
+
+# PyCharm / JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Jupyter Notebook extensions
+nbextensions/
+.jupyter/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Thumbnails & caches
+*.thumb
+thumbs.db
+ehthumbs.db
+
+# Mac OS
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+.AppleDesktop
+
+# Windows
+desktop.ini
+$RECYCLE.BIN/
+Thumbs.db
+ehthumbs.db
+
+# Linux
+*~
+.nfs*
+
+# JetBrains IDEs (WebStorm, IntelliJ, PyCharm, etc.)
+.idea/
+*.ipr
+*.iws
+*.iml
+out/
+
+# Temporary files and swap
+*.swp
+*.swo
+*.orig
+*.tmp
+*.temp
+
+# Node.js (for mixed Python+Node projects)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+.pnp.*
+.pnpm-debug.log
+
+# System
+*.iso
+*.bin
+*.img
+*.exe
+*.msi
+
+# Git
+*.patch
+*.rej
+*.goutputstream-*
+*.orig
+*.bak
+
+# CI/CD
+.github/workflows/*.secret.yaml
+*.hcl
+*.tfstate
+*.tfvars
+
+# Binaries
+*.exe
+*.dll
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.map
+*.min.*
+
+# Fonts & media
+*.ttf
+*.woff
+*.woff2
+*.eot
+*.svg
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.ico
+*.webp
+*.mp3
+*.wav
+*.mp4
+*.mov
+*.avi
+
+# Output reports
+output/
+results/
+reports/
+*.pdf
+*.docx
+*.pptx
